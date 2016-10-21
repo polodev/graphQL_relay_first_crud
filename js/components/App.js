@@ -15,6 +15,8 @@ class App extends React.Component {
   state = {
     firstName : "",
     lastName : "",
+    node : "",
+    editMode : false
   }
   addPerson = (e) => {
     e.preventDefault();
@@ -36,6 +38,21 @@ class App extends React.Component {
       )
 
   }
+  editMode = (node) => {
+    this.setState({
+      editMode : true,
+      node : node
+    });
+  }
+  editPerson = (e) => {
+    e.preventDefault();
+    let firstName = this.refs.editFirstName.value 
+    let lastName = this.refs.editLastName.value 
+    let editPerson = {
+      firstName : firstName === "" ? this.state.node.firstName : firstName,
+      lastName : lastName === "" ? this.state.node.lastName : lastName,
+    }
+  }
   render() {
     return (
       <div>
@@ -52,7 +69,7 @@ class App extends React.Component {
               First name : {edge.node.firstName}. 
               Last name : {edge.node.lastName}
               &nbsp;<button onClick={()=>{this.deletePerson(edge.node.id)}}>Delete</button>
-              &nbsp;<button onClick={()=>{this.deletePerson(edge.node.id)}}>Edit</button>
+              &nbsp;<button onClick={()=>{this.editMode(edge.node)}}>Edit</button>
             </li>
           )}
         </ul>
@@ -62,6 +79,19 @@ class App extends React.Component {
           <input type="text" name="lastName" ref="lastName" />
           <input type="submit" />
         </form>
+        {
+          this.state.editMode ? 
+          <div>
+            <h4>Edit person</h4>
+            <form onSubmit={this.editPerson}>
+              <input type="text" name="firstName" ref="editFirstName" placeholder={this.state.node.firstName} />
+              <input type="text" name="lastName" ref="editLastName" placeholder={this.state.node.lastName} />
+              <input type="submit" />
+            </form> 
+          </div>
+          : ""
+
+        }
       </div>
     );
   }
