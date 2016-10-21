@@ -27,6 +27,7 @@ import {
   globalIdField,
   mutationWithClientMutationId,
   nodeDefinitions,
+  cursorForObjectInConnection
 } from 'graphql-relay';
 
 import {
@@ -40,7 +41,8 @@ import {
   getWidgets,
   getPerson,
   getPeople,
-  deletePerson
+  deletePerson,
+  addPerson
 } from './database';
 
 /**
@@ -182,6 +184,34 @@ const DeletePersonMutation = mutationWithClientMutationId({
   }
 })
 
+const AddPersonMutation = mutationWithClientMutationId({
+  name : "AddPerson",
+  inputFields : {
+    firstName : {type : GraphQLString},
+    lastName : {type : GraphQLString}
+  } ,
+  outputFields : {
+    personEdge :{
+      type : personEdge,
+      resolve : ({localPersonId}) => {
+        const person = getPerson(localPersonId);
+        return {
+          node : person,
+          cursor : cursorForObjectInConnection(getPeople(), person)
+        }
+      }
+    },
+    viewer : {
+      type : userType,
+      resolve : () => getViewer()
+    }
+  },
+  mutateAndGetPayload :({firstName, lastName}) => {
+    const localPersonId = addPerson(firstName, lastName);
+    return {localPersonId}
+  }
+})
+
 
 
 /**
@@ -192,7 +222,8 @@ var mutationType = new GraphQLObjectType({
   name: 'Mutation',
   fields: () => ({
     // Add your own mutations here
-    deletePerson : DeletePersonMutation
+    deletePerson : DeletePersonMutation,
+    addPerson : AddPersonMutation,
   })
 });
 

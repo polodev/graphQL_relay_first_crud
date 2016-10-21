@@ -60,6 +60,14 @@ module.exports = {
     people.splice(personIndex, 1);
     return id;
   },
+  addPerson : (firstName, lastName) => {
+    var person = new People();
+    person.firstName = firstName;
+    person.lastName = lastName;
+    person.id = `${people.length}`;
+    people.push(person);
+    return person.id
+  },
   User,
   Widget,
   People
