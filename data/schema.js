@@ -33,10 +33,14 @@ import {
   // Import methods that your schema can use to interact with your database
   User,
   Widget,
+  People,
   getUser,
   getViewer,
   getWidget,
   getWidgets,
+  getPerson,
+  getPeople,
+  deletePerson
 } from './database';
 
 /**
@@ -52,6 +56,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return getUser(id);
     } else if (type === 'Widget') {
       return getWidget(id);
+    } else if (type === 'Person') {
+      return getPerson(id);
     } else {
       return null;
     }
@@ -61,7 +67,10 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return userType;
     } else if (obj instanceof Widget)  {
       return widgetType;
-    } else {
+    } else if(obj instanceof People) {
+      return personType;
+    }
+    else {
       return null;
     }
   }
@@ -82,6 +91,12 @@ var userType = new GraphQLObjectType({
       args: connectionArgs,
       resolve: (_, args) => connectionFromArray(getWidgets(), args),
     },
+    people : {
+      type: personConnection,
+      description: 'people details',
+      args: connectionArgs,
+      resolve: (_, args) => connectionFromArray(getPeople(), args),
+    },
   }),
   interfaces: [nodeInterface],
 });
@@ -99,12 +114,33 @@ var widgetType = new GraphQLObjectType({
   interfaces: [nodeInterface],
 });
 
+
 /**
  * Define your own connection types here
  */
 var {connectionType: widgetConnection} =
   connectionDefinitions({name: 'Widget', nodeType: widgetType});
 
+
+var personType = new GraphQLObjectType({
+  name: 'Person',
+  description: 'A representation of person',
+  fields: () => ({
+    id: globalIdField('Person'),
+    firstName: {
+      type: GraphQLString,
+      description: 'The name of the widget',
+    },
+    lastName : {
+      type: GraphQLString,
+      description: 'The name of the widget',
+    },
+  }),
+  interfaces: [nodeInterface],
+});
+
+var {connectionType: personConnection, edgeType : personEdge} =
+  connectionDefinitions({name: 'Person', nodeType: personType});
 /**
  * This is the type that will be the root of our query,
  * and the entry point into our schema.
@@ -121,6 +157,33 @@ var queryType = new GraphQLObjectType({
   }),
 });
 
+//GraphQLMutation
+const DeletePersonMutation = mutationWithClientMutationId({
+  name : 'DeletePerson',
+  inputFields : {
+    id : {type : GraphQLString }
+  },
+  outputFields : {
+    deletedPersonId : {
+      type : GraphQLID,
+      resolve : ({id}) => id,
+    },
+    viewer : {
+      type : userType,
+      resolve : () => getViewer()
+    }
+  },
+  mutateAndGetPayload : (inputFields) => {
+    console.log("mutateAndGetPayload", inputFields);
+    let {id} = inputFields;
+    let localId = fromGlobalId(id).id;
+    deletePerson(localId);
+    return inputFields
+  }
+})
+
+
+
 /**
  * This is the type that will be the root of our mutations,
  * and the entry point into performing writes in our schema.
@@ -129,6 +192,7 @@ var mutationType = new GraphQLObjectType({
   name: 'Mutation',
   fields: () => ({
     // Add your own mutations here
+    deletePerson : DeletePersonMutation
   })
 });
 
@@ -139,5 +203,5 @@ var mutationType = new GraphQLObjectType({
 export var Schema = new GraphQLSchema({
   query: queryType,
   // Uncomment the following after adding some mutation fields:
-  // mutation: mutationType
+   mutation: mutationType
 });
