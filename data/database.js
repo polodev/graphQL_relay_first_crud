@@ -74,6 +74,7 @@ module.exports = {
       person.firstName = firstName;
       person.lastName = lastName
     }
+    return id;
   },
   User,
   Widget,

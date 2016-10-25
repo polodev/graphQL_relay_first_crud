@@ -239,8 +239,11 @@ const EditPersonMutation = mutationWithClientMutationId({
     }
   },
   mutateAndGetPayload : ({id, firstName, lastName}) => {
-    var localId = fromGlobalId(id).id;
-    return editPerson(localId, firstName, lastName);
+    var localPersonId = fromGlobalId(id).id;
+    editPerson(localPersonId, firstName, lastName);
+    return {localPersonId};
+
+
   }
 })
 

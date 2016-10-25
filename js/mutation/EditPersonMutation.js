@@ -30,6 +30,7 @@ class EditPersonMutation extends Relay.Mutation {
 	getFatQuery () {
 		return Relay.QL `
 			fragment on EditPersonPayload @relay(pattern: true) {
+				personEdge
 				viewer
 			}
 		`
