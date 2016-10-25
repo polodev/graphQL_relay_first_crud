@@ -42,7 +42,8 @@ import {
   getPerson,
   getPeople,
   deletePerson,
-  addPerson
+  addPerson,
+  editPerson
 } from './database';
 
 /**
@@ -212,6 +213,37 @@ const AddPersonMutation = mutationWithClientMutationId({
   }
 })
 
+const EditPersonMutation = mutationWithClientMutationId({
+  name : "EditPerson",
+  inputFields : {
+    id : {type : GraphQLString},
+    firstName : {type : GraphQLString},
+    lastName : {type : GraphQLString},
+  },
+  outputFields : {
+    personEdge :{
+      type : personEdge,
+      resolve : ({localPersonId}) => {
+        console.log("local Person Id ", localPersonId);
+        const person = getPerson(localPersonId);
+        console.log("person", person);
+        return {
+          node : person,
+          cursor : cursorForObjectInConnection(getPeople(), person)
+        }
+      }
+    },
+    viewer : {
+      type : userType,
+      resolve : () => getViewer()
+    }
+  },
+  mutateAndGetPayload : ({id, firstName, lastName}) => {
+    var localId = fromGlobalId(id).id;
+    return editPerson(localId, firstName, lastName);
+  }
+})
+
 
 
 /**
@@ -224,6 +256,7 @@ var mutationType = new GraphQLObjectType({
     // Add your own mutations here
     deletePerson : DeletePersonMutation,
     addPerson : AddPersonMutation,
+    editPerson : EditPersonMutation
   })
 });
 

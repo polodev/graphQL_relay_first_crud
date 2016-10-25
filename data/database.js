@@ -68,6 +68,13 @@ module.exports = {
     people.push(person);
     return person.id
   },
+  editPerson : (id, firstName, lastName) => {
+    var person = people.filter(person => person.id === id)[0]
+    if(person) {
+      person.firstName = firstName;
+      person.lastName = lastName
+    }
+  },
   User,
   Widget,
   People

@@ -2,7 +2,7 @@ import React from 'react';
 import Relay from 'react-relay';
 import DeletePersonMutation from '../mutation/DeletePersonMutation.js'
 import AddPersonMutation from '../mutation/AddPersonMutation.js'
-
+import EditPersonMutation from '../mutation/EditPersonMutation.js'
 class App extends React.Component {
   deletePerson = (id) => {
     let person = {
@@ -48,10 +48,21 @@ class App extends React.Component {
     e.preventDefault();
     let firstName = this.refs.editFirstName.value 
     let lastName = this.refs.editLastName.value 
-    let editPerson = {
+    let person = {
+      id : this.state.node.id, 
       firstName : firstName === "" ? this.state.node.firstName : firstName,
       lastName : lastName === "" ? this.state.node.lastName : lastName,
     }
+    console.log("editPerson", person);
+    this.setState({
+      editMode : false
+    });
+    Relay.Store.commitUpdate(
+        new  EditPersonMutation({
+          person,
+          viewer : this.props.viewer
+        })
+      )
   }
   render() {
     return (
@@ -120,6 +131,7 @@ export default Relay.createContainer(App, {
         }
         ${DeletePersonMutation.getFragment('viewer')}
         ${AddPersonMutation.getFragment('viewer')}
+        ${EditPersonMutation.getFragment('viewer')}
       }
 
     `,
